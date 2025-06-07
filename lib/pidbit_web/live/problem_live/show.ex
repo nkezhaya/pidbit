@@ -20,8 +20,8 @@ defmodule PidbitWeb.ProblemLive.Show do
         </div>
 
         <div class="px-4 sm:px-6 lg:px-8">
-          <.form for={%{}} phx-submit="submit">
-            <div id="CodeEditor" class="my-2" phx-update="ignore" data-language="javascript" data-code="" phx-hook="Editor">
+          <.form for={%{}} class="h-full" phx-submit="submit">
+            <div id="CodeEditor" class="my-2 h-full" phx-update="ignore" data-language="elixir" data-code="" phx-hook="Editor">
               <div class="w-full h-full" data-el-code-editor />
             </div>
 
