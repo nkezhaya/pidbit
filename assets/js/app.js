@@ -20,12 +20,15 @@ import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
-import Editor from "./hooks/Editor"
+import { CodeEditorHook } from "../../deps/live_monaco_editor/priv/static/live_monaco_editor.esm"
+
+let Hooks = {}
+Hooks.CodeEditorHook = CodeEditorHook
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
-  hooks: { Editor },
+  hooks: Hooks,
   params: {_csrf_token: csrfToken}
 })
 

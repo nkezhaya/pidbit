@@ -21,9 +21,16 @@ defmodule PidbitWeb.ProblemLive.Show do
 
         <div class="px-4 sm:px-6 lg:px-8">
           <.form for={%{}} class="h-full" phx-submit="submit">
-            <div id="CodeEditor" class="my-2 h-full" phx-update="ignore" data-language="elixir" data-code="" phx-hook="Editor">
-              <div class="w-full h-full" data-el-code-editor />
-            </div>
+            <LiveMonacoEditor.code_editor
+              class="my-2"
+              style="min-height: 250px; width: 100%;"
+              opts={
+                Map.merge(
+                  LiveMonacoEditor.default_opts(),
+                  %{"language" => "elixir"}
+                )
+              }
+            />
 
             <button type="submit" class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Submit</button>
           </.form>

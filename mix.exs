@@ -58,7 +58,8 @@ defmodule Pidbit.MixProject do
       {:gettext, "~> 0.26"},
       {:bandit, "~> 1.5"},
       {:k8s, "~> 2.6"},
-      {:earmark, "~> 1.4"}
+      {:earmark, "~> 1.4"},
+      {:live_monaco_editor, "~> 0.2"}
     ]
   end
 
