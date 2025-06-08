@@ -16,7 +16,10 @@ defmodule PidbitWeb.ProblemLive.Show do
           <div class="mb-2">
             <h1 class="font-semibold">{@problem.id}. {@problem.name}</h1>
           </div>
-          <.markdown md={@problem.description} />
+
+          <div class="space-y-2">
+            <.markdown md={@problem.description} />
+          </div>
         </div>
 
         <div class="px-4 sm:px-6 lg:px-8">
