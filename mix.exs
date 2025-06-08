@@ -58,7 +58,7 @@ defmodule Pidbit.MixProject do
       {:gettext, "~> 0.26"},
       {:bandit, "~> 1.5"},
       {:k8s, "~> 2.6"},
-      {:earmark, "~> 1.4"},
+      {:mdex, "~> 0.7"},
       {:live_monaco_editor, "~> 0.2"}
     ]
   end
@@ -76,7 +76,7 @@ defmodule Pidbit.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      #"assets.build": ["tailwind pidbit", "cmd --cd assets node build.js"],
+      # "assets.build": ["tailwind pidbit", "cmd --cd assets node build.js"],
       "assets.build": ["tailwind pidbit", "esbuild pidbit"],
       "assets.deploy": ["cmd --cd assets node build.js --deploy", "phx.digest"]
     ]

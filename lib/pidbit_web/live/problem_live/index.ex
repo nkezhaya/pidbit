@@ -20,8 +20,15 @@ defmodule PidbitWeb.ProblemLive.Index do
             <table class="min-w-full divide-y divide-gray-300">
               <thead>
                 <tr>
-                  <th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-3">Name</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Difficulty</th>
+                  <th
+                    scope="col"
+                    class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                  >
+                    Name
+                  </th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    Difficulty
+                  </th>
                 </tr>
               </thead>
               <tbody class="bg-white">

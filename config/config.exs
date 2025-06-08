@@ -35,8 +35,7 @@ config :pidbit, Pidbit.Mailer, adapter: Swoosh.Adapters.Local
 config :esbuild,
   version: "0.18.6",
   pidbit: [
-    args:
-    ~w(
+    args: ~w(
       js/app.js
       --bundle
       --target=es2020

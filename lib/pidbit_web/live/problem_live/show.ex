@@ -17,7 +17,7 @@ defmodule PidbitWeb.ProblemLive.Show do
             <h1 class="font-semibold">{@problem.id}. {@problem.name}</h1>
           </div>
 
-          <div class="space-y-2">
+          <div id="ProblemDescription" class="space-y-3">
             <.markdown md={@problem.description} />
           </div>
         </div>
@@ -36,7 +36,12 @@ defmodule PidbitWeb.ProblemLive.Show do
               }
             />
 
-            <button type="submit" class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Submit</button>
+            <button
+              type="submit"
+              class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Submit
+            </button>
           </.form>
 
           <div :if={@output}>{@output}</div>
@@ -50,7 +55,7 @@ defmodule PidbitWeb.ProblemLive.Show do
     markdown_html =
       assigns.md
       |> String.trim()
-      |> Earmark.as_html!(code_class_prefix: "lang- language-")
+      |> MDEx.to_html!()
 
     assigns = assign(assigns, :markdown, markdown_html)
 

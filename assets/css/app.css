@@ -1,2 +1,6 @@
 @import "tailwindcss";
 @import "../../deps/live_monaco_editor/priv/static/live_monaco_editor.min.css";
+
+#ProblemDescription ul {
+  @apply list-disc list-inside pl-4;
+}

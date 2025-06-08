@@ -21,7 +21,12 @@ defmodule Pidbit.ProblemsTest do
     end
 
     test "create_problem/1 with valid data creates a problem" do
-      valid_attrs = %{name: "some name", description: "some description", slug: "some slug", difficulty: "some difficulty"}
+      valid_attrs = %{
+        name: "some name",
+        description: "some description",
+        slug: "some slug",
+        difficulty: "some difficulty"
+      }
 
       assert {:ok, %Problem{} = problem} = Problems.create_problem(valid_attrs)
       assert problem.name == "some name"
@@ -36,7 +41,13 @@ defmodule Pidbit.ProblemsTest do
 
     test "update_problem/2 with valid data updates the problem" do
       problem = problem_fixture()
-      update_attrs = %{name: "some updated name", description: "some updated description", slug: "some updated slug", difficulty: "some updated difficulty"}
+
+      update_attrs = %{
+        name: "some updated name",
+        description: "some updated description",
+        slug: "some updated slug",
+        difficulty: "some updated difficulty"
+      }
 
       assert {:ok, %Problem{} = problem} = Problems.update_problem(problem, update_attrs)
       assert problem.name == "some updated name"
