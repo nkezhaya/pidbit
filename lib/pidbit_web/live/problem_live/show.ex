@@ -27,6 +27,7 @@ defmodule PidbitWeb.ProblemLive.Show do
             <LiveMonacoEditor.code_editor
               class="my-2"
               style="min-height: 250px; width: 100%;"
+              value={@problem.stub}
               opts={
                 Map.merge(
                   LiveMonacoEditor.default_opts(),
