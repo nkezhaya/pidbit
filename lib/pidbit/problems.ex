@@ -5,7 +5,9 @@ defmodule Pidbit.Problems do
   alias Pidbit.Problems.Problem
 
   def list_problems do
-    Repo.all(Problem)
+    Problem
+    |> order_by(:id)
+    |> Repo.all()
   end
 
   def get_problem!(id), do: Repo.get!(Problem, id)
