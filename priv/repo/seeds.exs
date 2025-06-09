@@ -1,6 +1,15 @@
 alias Pidbit.Repo
 alias Pidbit.Problems.Problem
 
+defmodule Seeds do
+  def insert(problem) do
+    stub = String.trim(problem.stub)
+
+    %{problem | stub: stub}
+    |> Repo.insert!(on_conflict: :replace_all, conflict_target: [:id])
+  end
+end
+
 %Problem{
   id: 1,
   name: "Hello World",
@@ -16,7 +25,7 @@ alias Pidbit.Problems.Problem
   end
   """
 }
-|> Repo.insert!(on_conflict: :replace_all, conflict_target: [:id])
+|> Seeds.insert()
 
 %Problem{
   id: 2,
@@ -35,9 +44,9 @@ alias Pidbit.Problems.Problem
 
   * `start_link/1` starts the registry process.
   * `get_or_start/2`:
-      * If a process for the given key already exists, returns its PID.
-      * If no process exists for the key, starts a new short-lived GenServer (your implementation), stores it in the registry, and returns its PID.
-      * Multiple concurrent calls to `get_or_start/2` with the same key must not start multiple processes.
+    * If a process for the given key already exists, returns its PID.
+    * If no process exists for the key, starts a new short-lived GenServer (your implementation), stores it in the registry, and returns its PID.
+    * Multiple concurrent calls to `get_or_start/2` with the same key must not start multiple processes.
 
   **Constraints**:
 
@@ -61,4 +70,53 @@ alias Pidbit.Problems.Problem
   end
   """
 }
-|> Repo.insert!(on_conflict: :replace_all, conflict_target: [:id])
+|> Seeds.insert()
+
+%Problem{
+  id: 3,
+  name: "Event Buffer",
+  slug: "event-buffer",
+  difficulty: :hard,
+  description: """
+  You are implementing a high-performance, in-memory event buffer that supports concurrent writes and flushing of events in order.
+
+  Your task is to implement a module EventBuffer with the following public functions:
+
+  * `EventBuffer.start_link()`
+  * `EventBuffer.write(event :: String.t()) :: :ok`
+  * `EventBuffer.flush() :: [{pos_integer(), String.t()}]`
+
+  **Behavior**:
+
+  * `start_link/0` initializes the buffer process and any necessary internal state.
+  * `write/1` appends an event to the buffer:
+    * Assigns it a monotonically increasing integer ID, starting from 1
+    * Returns `:ok`
+  * `flush/0` returns all events in the order they were written, and empties the buffer
+  * The function returns a list of tuples, where the first element is the unique ID of the event, and the second element is the event string passed to `write/1`
+
+  **Constraints**:
+
+  * `write/1` must support tens of thousands of concurrent calls per second
+  * Only one instance of `flush/0` will be called at a time
+  * `flush/0` must be synchronous
+  * Each event must be flushed exactly once
+  """,
+  stub: """
+  defmodule EventBuffer do
+    @spec start_link() :: GenServer.on_start()
+    def start_link do
+    end
+
+    @spec write(String.t()) :: :ok
+    def write(event) do
+    end
+
+    @spec flush() :: [{pos_integer(), String.t()}]
+    def flush() do
+    end
+  end
+  """
+}
+|> Seeds.insert()
+
