@@ -1,9 +1,9 @@
 defmodule Pidbit.Runner do
   alias Pidbit.Accounts.User
-  alias __MODULE__.Counter
 
   def run_code(%User{} = user, code) do
-    job_id = Counter.get()
+    job_id = Ecto.UUID.generate() |> :erlang.phash2()
+    job_name = "runner-job-#{job_id}"
     {:ok, conn} = K8s.Conn.from_file(abspath("kubeconfig.yaml"))
 
     File.mkdir_p!(abspath("code/#{user.id}"))
@@ -13,7 +13,7 @@ defmodule Pidbit.Runner do
       "apiVersion" => "batch/v1",
       "kind" => "Job",
       "metadata" => %{
-        "name" => "runner-job-#{job_id}",
+        "name" => job_name,
         "namespace" => "default"
       },
       "spec" => %{
@@ -50,8 +50,67 @@ defmodule Pidbit.Runner do
     }
 
     operation = K8s.Client.create(resource)
-    {:ok, job} = K8s.Client.run(conn, operation)
-    job
+    {:ok, _job} = K8s.Client.run(conn, operation)
+
+    get_logs(conn, job_name)
+  end
+
+  def test do
+    {:ok, conn} = K8s.Conn.from_file(abspath("kubeconfig.yaml"))
+    job_name = "runner-job-107665578"
+
+    operation =
+      K8s.Client.list("v1", "pods", namespace: "default")
+      |> K8s.Operation.put_selector(K8s.Selector.label({"job-name", job_name}))
+
+    {:ok, %{"items" => items}} = K8s.Client.run(conn, operation)
+    length(items)
+  end
+
+  def get_pod(conn, job_name) do
+    operation =
+      K8s.Client.list("v1", "pods", namespace: "default")
+      |> K8s.Operation.put_selector(K8s.Selector.label({"job-name", job_name}))
+
+    {:ok, %{"items" => [%{"metadata" => %{"name" => name}}]}} = K8s.Client.run(conn, operation)
+
+    operation = K8s.Client.get("v1", "pods", namespace: "default", name: name)
+    {:ok, _pod} = K8s.Client.run(conn, operation)
+  end
+
+  def get_logs(conn, job_name) do
+    {:ok, pod} = wait_until_terminated(conn, job_name, System.monotonic_time(:second))
+
+    %{"metadata" => %{"name" => name}} = pod
+
+    operation =
+      K8s.Client.get("v1", "pods/log",
+        namespace: "default",
+        name: name,
+        container: "elixir-runner"
+      )
+
+    {:ok, logs} = K8s.Client.run(conn, operation)
+    logs
+  end
+
+  defp wait_until_terminated(conn, job_name, started_at) do
+    if System.monotonic_time(:second) - started_at >= 30 do
+      raise "never terminated"
+    end
+
+    :timer.sleep(500)
+
+    {:ok, pod} = get_pod(conn, job_name)
+
+    %{"status" => %{"containerStatuses" => [%{"state" => state}]}} = pod
+    [{status, _}] = Enum.to_list(state)
+
+    if status == "terminated" do
+      {:ok, pod}
+    else
+      wait_until_terminated(conn, job_name, started_at)
+    end
   end
 
   defp abspath(file) do

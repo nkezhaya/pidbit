@@ -5,7 +5,11 @@ defmodule PidbitWeb.ProblemLive.Show do
 
   def mount(%{"id" => id}, _session, socket) do
     problem = Problems.get_problem!(id)
-    {:ok, assign(socket, problem: problem, output: nil, loading: false)}
+
+    {:ok,
+     socket
+     |> assign(problem: problem, loading: false)
+     |> assign(code: problem.stub, output: nil)}
   end
 
   def render(assigns) do
@@ -23,28 +27,33 @@ defmodule PidbitWeb.ProblemLive.Show do
         </div>
 
         <div class="px-4 sm:px-6 lg:px-8">
-          <.form for={%{}} class="h-full" phx-submit="submit">
-            <LiveMonacoEditor.code_editor
-              class="my-2"
-              style="min-height: 250px; width: 100%;"
-              value={@problem.stub}
-              opts={
-                Map.merge(
-                  LiveMonacoEditor.default_opts(),
-                  %{"language" => "elixir"}
-                )
-              }
-            />
+          <LiveMonacoEditor.code_editor
+            class="my-2"
+            style="min-height: 250px; width: 100%;"
+            value={@code}
+            change="editor_update"
+            opts={
+              Map.merge(
+                LiveMonacoEditor.default_opts(),
+                %{"language" => "elixir"}
+              )
+            }
+          />
 
-            <button
-              type="submit"
-              class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
+          <button
+            type="button"
+            phx-click="submit"
+            disabled={@output && !@output.ok?}
+            class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
+          >
+            <%= if @output && @output.loading do %>
+              Submitting...
+            <% else %>
               Submit
-            </button>
-          </.form>
+            <% end %>
+          </button>
 
-          <div :if={@output}>{@output}</div>
+          <div :if={output = @output && @output.ok? && @output.result}>{output}</div>
         </div>
       </div>
     </div>
@@ -64,15 +73,20 @@ defmodule PidbitWeb.ProblemLive.Show do
     """
   end
 
-  def handle_event("submit", %{"code" => code}, socket) do
+  def handle_event("editor_update", %{"value" => code}, socket) do
+    {:noreply, assign(socket, code: code)}
+  end
+
+  def handle_event("submit", _, socket) do
     user = Pidbit.Repo.one(Pidbit.Accounts.User)
+    code = socket.assigns.code
 
-    Task.start(fn ->
-      output = Runner.run_code(user, code)
-      send(self(), {:result, output})
-    end)
-
-    {:noreply, assign(socket, loading: true, output: nil)}
+    {:noreply,
+     socket
+     |> assign(:output, nil)
+     |> assign_async(:output, fn ->
+       {:ok, %{output: Runner.run_code(user, code)}}
+     end)}
   end
 
   def handle_info({:result, output}, socket) do

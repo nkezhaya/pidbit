@@ -28,20 +28,21 @@ alias Pidbit.Problems.Problem
 
   Your task is to implement a module with the following public functions:
 
-  * `ProcRegistry.start_link()`
-  * `ProcRegistry.get_or_start(key :: String.t()) :: {:ok, pid()}`
+  * `ProcRegistry.start_link(worker_module :: module()) :: GenServer.on_start()`
+  * `ProcRegistry.get_or_start(worker_module :: module(), key :: String.t()) :: {:ok, pid()}`
 
   **Behavior**:
 
-  * `start_link/0` starts the registry process and any supporting supervision tree.
-  * `get_or_start/1`:
+  * `start_link/1` starts the registry process.
+  * `get_or_start/2`:
       * If a process for the given key already exists, returns its PID.
       * If no process exists for the key, starts a new short-lived GenServer (your implementation), stores it in the registry, and returns its PID.
-      * Multiple concurrent calls to `get_or_start/1` with the same key must not start multiple processes.
+      * Multiple concurrent calls to `get_or_start/2` with the same key must not start multiple processes.
 
   **Constraints**:
 
-  * There will be tens of thousands of calls to `get_or_start/1` per second
+  * Only **one** `ProcRegistry` can be started for the given worker module
+  * There will be tens of thousands of calls to `get_or_start/2` per second
   * New processes are started at a rate of dozens per second
   * Each registered process lives for around 10 seconds
   * The registry is local only (no distribution)
@@ -50,11 +51,12 @@ alias Pidbit.Problems.Problem
   """,
   stub: """
   defmodule ProcRegistry do
-    def start_link do
+    @spec start_link(module()) :: GenServer.on_start()
+    def start_link(worker_module) do
     end
 
-    @spec get_or_start(key :: String.t()) :: {:ok, pid()}
-    def get_or_start(key) do
+    @spec get_or_start(module(), String.t()) :: {:ok, pid()}
+    def get_or_start(worker_module, key) do
     end
   end
   """

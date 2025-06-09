@@ -10,7 +10,6 @@ defmodule Pidbit.Application do
     children = [
       PidbitWeb.Telemetry,
       Pidbit.Repo,
-      Pidbit.Runner.Counter,
       {Phoenix.PubSub, name: Pidbit.PubSub},
       {Finch, name: Pidbit.Finch},
       PidbitWeb.Endpoint
