@@ -119,4 +119,3 @@ end
   """
 }
 |> Seeds.insert()
-

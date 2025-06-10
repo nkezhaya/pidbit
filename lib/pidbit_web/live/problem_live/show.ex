@@ -8,53 +8,48 @@ defmodule PidbitWeb.ProblemLive.Show do
 
     {:ok,
      socket
+     |> assign(page_title: problem.name, page_header: "#{problem.id}. #{problem.name}")
      |> assign(problem: problem, loading: false)
      |> assign(code: problem.stub, output: nil)}
   end
 
   def render(assigns) do
     ~H"""
-    <div class="h-dvh">
-      <div class="grid h-screen grid-cols-2 gap-4">
-        <div class="px-4 sm:px-6 lg:px-8">
-          <div class="mb-2">
-            <h1 class="font-semibold">{@problem.id}. {@problem.name}</h1>
-          </div>
-
-          <div id="ProblemDescription" class="space-y-3">
-            <.markdown md={@problem.description} />
-          </div>
+    <div class="grid h-screen grid-cols-2 gap-4">
+      <div>
+        <div id="ProblemDescription" class="space-y-3">
+          <.markdown md={@problem.description} />
         </div>
+      </div>
 
-        <div class="px-4 sm:px-6 lg:px-8">
-          <LiveMonacoEditor.code_editor
-            class="my-2"
-            style="min-height: 250px; width: 100%;"
-            value={@code}
-            change="editor_update"
-            opts={
-              Map.merge(
-                LiveMonacoEditor.default_opts(),
-                %{"language" => "elixir"}
-              )
-            }
-          />
+      <div>
+        <LiveMonacoEditor.code_editor
+          class="my-2"
+          style="min-height: 250px; width: 100%;"
+          value={@code}
+          change="editor_update"
+          opts={
+            Map.merge(
+              LiveMonacoEditor.default_opts(),
+              %{"language" => "elixir"}
+            )
+          }
+        />
 
-          <button
-            type="button"
-            phx-click="submit"
-            disabled={@output && !@output.ok?}
-            class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
-          >
-            <%= if @output && @output.loading do %>
-              Submitting...
-            <% else %>
-              Submit
-            <% end %>
-          </button>
+        <button
+          type="button"
+          phx-click="submit"
+          disabled={@output && !@output.ok?}
+          class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
+        >
+          <%= if @output && @output.loading do %>
+            Submitting...
+          <% else %>
+            Submit
+          <% end %>
+        </button>
 
-          <div :if={output = @output && @output.ok? && @output.result}>{output}</div>
-        </div>
+        <div :if={output = @output && @output.ok? && @output.result}>{output}</div>
       </div>
     </div>
     """
