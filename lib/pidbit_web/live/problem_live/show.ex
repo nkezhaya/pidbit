@@ -16,10 +16,8 @@ defmodule PidbitWeb.ProblemLive.Show do
   def render(assigns) do
     ~H"""
     <div class="grid h-screen grid-cols-2 gap-4">
-      <div>
-        <div id="ProblemDescription" class="space-y-3">
-          <.markdown md={@problem.description} />
-        </div>
+      <div id="ProblemDescription" class="space-y-3">
+        <.markdown md={@problem.description} />
       </div>
 
       <div>
