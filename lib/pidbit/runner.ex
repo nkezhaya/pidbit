@@ -67,19 +67,8 @@ defmodule Pidbit.Runner do
     length(items)
   end
 
-  def get_pod(conn, job_name) do
-    operation =
-      K8s.Client.list("v1", "pods", namespace: "default")
-      |> K8s.Operation.put_selector(K8s.Selector.label({"job-name", job_name}))
-
-    {:ok, %{"items" => [%{"metadata" => %{"name" => name}}]}} = K8s.Client.run(conn, operation)
-
-    operation = K8s.Client.get("v1", "pods", namespace: "default", name: name)
-    {:ok, _pod} = K8s.Client.run(conn, operation)
-  end
-
   def get_logs(conn, job_name) do
-    {:ok, pod} = wait_until_terminated(conn, job_name, System.monotonic_time(:second))
+    {:ok, pod} = wait_until_terminated(conn, job_name)
 
     %{"metadata" => %{"name" => name}} = pod
 
@@ -94,23 +83,32 @@ defmodule Pidbit.Runner do
     logs
   end
 
-  defp wait_until_terminated(conn, job_name, started_at) do
-    if System.monotonic_time(:second) - started_at >= 30 do
-      raise "never terminated"
+  defp wait_until_terminated(conn, job_name) do
+    # Get pod
+    find = fn pods ->
+      with %{"items" => [%{"metadata" => %{"name" => _}}]} <- pods do
+        true
+      end
     end
 
-    :timer.sleep(500)
+    operation =
+      K8s.Client.list("v1", "pods", namespace: "default")
+      |> K8s.Operation.put_selector(K8s.Selector.label({"job-name", job_name}))
 
-    {:ok, pod} = get_pod(conn, job_name)
+    {:ok, %{"items" => [%{"metadata" => %{"name" => name}}]}} =
+      K8s.Client.Runner.Wait.run(conn, operation, find: find, eval: true, timeout: 5)
 
-    %{"status" => %{"containerStatuses" => [%{"state" => state}]}} = pod
-    [{status, _}] = Enum.to_list(state)
+    # Get status
+    operation = K8s.Client.get("v1", "pods", namespace: "default", name: name)
 
-    if status == "terminated" do
-      {:ok, pod}
-    else
-      wait_until_terminated(conn, job_name, started_at)
+    find = fn pod ->
+      with %{"status" => %{"containerStatuses" => [%{"state" => state}]}} <- pod,
+           %{"terminated" => _} <- state do
+        true
+      end
     end
+
+    {:ok, _pod} = K8s.Client.Runner.Wait.run(conn, operation, find: find, eval: true, timeout: 30)
   end
 
   defp abspath(file) do
