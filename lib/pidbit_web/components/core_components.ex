@@ -403,6 +403,28 @@ defmodule PidbitWeb.CoreComponents do
   end
 
   @doc """
+  Renders a difficulty badge.
+  """
+  attr :rating, :atom, required: true
+
+  def difficulty_tag(assigns) do
+    color =
+      case assigns.rating do
+        :easy -> "bg-green-100 text-green-700"
+        :medium -> "bg-yellow-100 text-yellow-800"
+        :hard -> "bg-red-100 text-red-700"
+      end
+
+    assigns = assign(assigns, :color, color)
+
+    ~H"""
+    <span class={"inline-flex items-center rounded-full px-2 py-1 text-xs font-medium #{@color}"}>
+      {@rating}
+    </span>
+    """
+  end
+
+  @doc """
   Generates a generic error message.
   """
   slot :inner_block, required: true
