@@ -55,32 +55,22 @@ defmodule Pidbit.Runner do
     get_logs(conn, job_name)
   end
 
-  def test do
-    {:ok, conn} = K8s.Conn.from_file(abspath("kubeconfig.yaml"))
-    job_name = "runner-job-107665578"
-
-    operation =
-      K8s.Client.list("v1", "pods", namespace: "default")
-      |> K8s.Operation.put_selector(K8s.Selector.label({"job-name", job_name}))
-
-    {:ok, %{"items" => items}} = K8s.Client.run(conn, operation)
-    length(items)
-  end
-
   def get_logs(conn, job_name) do
-    {:ok, pod} = wait_until_terminated(conn, job_name)
+    case wait_until_terminated(conn, job_name) do
+      {:ok, %{"metadata" => %{"name" => name}}} ->
+        operation =
+          K8s.Client.get("v1", "pods/log",
+            namespace: "default",
+            name: name,
+            container: "elixir-runner"
+          )
 
-    %{"metadata" => %{"name" => name}} = pod
+        {:ok, logs} = K8s.Client.run(conn, operation)
+        logs
 
-    operation =
-      K8s.Client.get("v1", "pods/log",
-        namespace: "default",
-        name: name,
-        container: "elixir-runner"
-      )
-
-    {:ok, logs} = K8s.Client.run(conn, operation)
-    logs
+      error ->
+        error
+    end
   end
 
   defp wait_until_terminated(conn, job_name) do
@@ -108,7 +98,7 @@ defmodule Pidbit.Runner do
       end
     end
 
-    {:ok, _pod} = K8s.Client.Runner.Wait.run(conn, operation, find: find, eval: true, timeout: 30)
+    K8s.Client.Runner.Wait.run(conn, operation, find: find, eval: true, timeout: 30)
   end
 
   defp abspath(file) do
