@@ -49,7 +49,9 @@ defmodule PidbitWeb.ProblemLive.Show do
           <% end %>
         </button>
 
-        <div :if={output = @output && @output.ok? && @output.result}>{output}</div>
+        <div :if={output = @output && @output.ok? && @output.result} class="mt-2 overflow-scroll">
+          {raw(output)}
+        </div>
       </div>
     </div>
     """
@@ -82,7 +84,16 @@ defmodule PidbitWeb.ProblemLive.Show do
          socket
          |> assign(:output, nil)
          |> assign_async(:output, fn ->
-           {:ok, %{output: Runner.run_submission(submission)}}
+           output =
+             """
+             ```
+             #{Runner.run_submission(submission)}
+             ```
+             """
+             |> String.trim()
+             |> MDEx.to_html!()
+
+           {:ok, %{output: output}}
          end)}
 
       _ ->
