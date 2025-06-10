@@ -5,13 +5,14 @@ defmodule Seeds do
   def insert(problem) do
     stub = String.trim(problem.stub)
 
-    %{problem | stub: stub}
-    |> Repo.insert!(on_conflict: :replace_all, conflict_target: [:id])
+    problem
+    |> Problem.changeset(%{stub: stub})
+    |> Repo.insert!(on_conflict: :replace_all, conflict_target: [:number])
   end
 end
 
 %Problem{
-  id: 1,
+  number: 1,
   name: "Hello World",
   slug: "hello-world",
   difficulty: :easy,
@@ -28,7 +29,7 @@ end
 |> Seeds.insert()
 
 %Problem{
-  id: 2,
+  number: 2,
   name: "Registry",
   slug: "registry",
   difficulty: :medium,
@@ -73,7 +74,7 @@ end
 |> Seeds.insert()
 
 %Problem{
-  id: 3,
+  number: 3,
   name: "Event Buffer",
   slug: "event-buffer",
   difficulty: :hard,

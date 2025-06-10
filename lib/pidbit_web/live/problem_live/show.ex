@@ -8,7 +8,7 @@ defmodule PidbitWeb.ProblemLive.Show do
 
     {:ok,
      socket
-     |> assign(page_title: problem.name, page_header: "#{problem.id}. #{problem.name}")
+     |> assign(page_title: problem.name, page_header: "#{problem.number}. #{problem.name}")
      |> assign(problem: problem, loading: false)
      |> assign(code: problem.stub, output: nil)}
   end
@@ -74,14 +74,20 @@ defmodule PidbitWeb.ProblemLive.Show do
 
   def handle_event("submit", _, socket) do
     user = Pidbit.Repo.one(Pidbit.Accounts.User)
-    code = socket.assigns.code
+    %{code: code, problem: problem} = socket.assigns
 
-    {:noreply,
-     socket
-     |> assign(:output, nil)
-     |> assign_async(:output, fn ->
-       {:ok, %{output: Runner.run_code(user, code)}}
-     end)}
+    case Problems.create_submission(problem, user, code) do
+      {:ok, submission} ->
+        {:noreply,
+         socket
+         |> assign(:output, nil)
+         |> assign_async(:output, fn ->
+           {:ok, %{output: Runner.run_submission(submission)}}
+         end)}
+
+      _ ->
+        {:noreply, socket}
+    end
   end
 
   def handle_info({:result, output}, socket) do

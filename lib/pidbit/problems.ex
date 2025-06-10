@@ -1,8 +1,10 @@
 defmodule Pidbit.Problems do
   import Ecto.Query, warn: false
+
+  alias Pidbit.Accounts.User
   alias Pidbit.Repo
 
-  alias Pidbit.Problems.Problem
+  alias __MODULE__.{Problem, Submission}
 
   def list_problems do
     Problem
@@ -30,5 +32,11 @@ defmodule Pidbit.Problems do
 
   def change_problem(%Problem{} = problem, attrs \\ %{}) do
     Problem.changeset(problem, attrs)
+  end
+
+  def create_submission(%Problem{} = problem, %User{} = user, code) do
+    %Submission{problem_id: problem.id, user_id: user.id}
+    |> Submission.changeset(%{code: code})
+    |> Repo.insert()
   end
 end

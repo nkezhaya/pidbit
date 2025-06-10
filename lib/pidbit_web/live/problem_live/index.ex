@@ -35,7 +35,7 @@ defmodule PidbitWeb.ProblemLive.Index do
                 <tr :for={problem <- @problems} class="even:bg-gray-50">
                   <td class="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-3">
                     <a href={~p"/problems/#{problem.id}"} class="hover:underline">
-                      {problem.id}. {problem.name}
+                      {problem.number}. {problem.name}
                     </a>
                   </td>
                   <td class="px-3 py-4 text-sm whitespace-nowrap text-gray-500">

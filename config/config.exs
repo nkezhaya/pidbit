@@ -30,6 +30,7 @@ config :pidbit, PidbitWeb.Endpoint,
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
 config :pidbit, Pidbit.Mailer, adapter: Swoosh.Adapters.Local
+config :pidbit, Pidbit.Repo, migration_primary_key: [type: :binary_id]
 
 # Configure esbuild (the version is required)
 config :esbuild,

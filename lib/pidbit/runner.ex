@@ -1,13 +1,13 @@
 defmodule Pidbit.Runner do
-  alias Pidbit.Accounts.User
+  alias Pidbit.Problems.Submission
 
-  def run_code(%User{} = user, code) do
+  def run_submission(%Submission{user_id: user_id, code: code}) do
     job_id = Ecto.UUID.generate() |> :erlang.phash2()
     job_name = "runner-job-#{job_id}"
     {:ok, conn} = K8s.Conn.from_file(abspath("kubeconfig.yaml"))
 
-    File.mkdir_p!(abspath("code/#{user.id}"))
-    File.write!(abspath("code/#{user.id}/#{job_id}.exs"), code)
+    File.mkdir_p!(abspath("code/#{user_id}"))
+    File.write!(abspath("code/#{user_id}/#{job_id}.exs"), code)
 
     resource = %{
       "apiVersion" => "batch/v1",
@@ -30,7 +30,7 @@ defmodule Pidbit.Runner do
                 "image" => "elixir:1.18.4-otp-27-alpine",
                 "command" => ["sh", "-c", "elixir /code/#{job_id}.exs"],
                 "volumeMounts" => [
-                  %{"mountPath" => "/code", "name" => "code", "subPath" => user.id}
+                  %{"mountPath" => "/code", "name" => "code", "subPath" => user_id}
                 ]
               }
             ],
