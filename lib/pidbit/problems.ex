@@ -35,7 +35,7 @@ defmodule Pidbit.Problems do
   end
 
   def create_submission(%Problem{} = problem, %User{} = user, code) do
-    %Submission{problem_id: problem.id, user_id: user.id}
+    %Submission{problem: problem, problem_id: problem.id, user_id: user.id}
     |> Submission.changeset(%{code: code})
     |> Repo.insert()
   end

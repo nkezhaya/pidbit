@@ -1,12 +1,29 @@
 defmodule Pidbit.Runner do
   alias Pidbit.Problems.Submission
 
-  def run_submission(%Submission{id: submission_id, code: code}) do
+  def run_submission(%Submission{id: submission_id, code: code, problem: problem}) do
     job_name = "runner-job-#{submission_id}"
     {:ok, conn} = K8s.Conn.from_file(abspath("kubeconfig.yaml"))
 
-    File.mkdir_p!(abspath("code/#{submission_id}"))
-    File.write!(abspath("code/#{submission_id}/solution.ex"), code)
+    subdir = abspath("code/#{submission_id}")
+
+    File.mkdir_p!(subdir)
+    File.write!("#{subdir}/solution.ex", code)
+
+    :code.priv_dir(:pidbit)
+    |> Path.join("problems/#{problem.number}/test.ex")
+    |> File.cp!("#{subdir}/test.ex")
+
+    cmd = """
+    cd /code
+    output=$(elixirc solution.ex 2>&1 >/dev/null);
+    status=$?;
+    if [ $status -eq 0 ]; then
+      elixir test.ex
+    else
+      echo "$output"
+    fi
+    """
 
     resource = %{
       "apiVersion" => "batch/v1",
@@ -27,7 +44,7 @@ defmodule Pidbit.Runner do
               %{
                 "name" => "elixir-runner",
                 "image" => "elixir:1.18.4-otp-27-alpine",
-                "command" => ["sh", "-c", "elixir /code/solution.ex 2>/dev/null"],
+                "command" => ["sh", "-c", cmd],
                 "volumeMounts" => [
                   %{"mountPath" => "/code", "name" => "code", "subPath" => submission_id}
                 ]
@@ -49,10 +66,13 @@ defmodule Pidbit.Runner do
     }
 
     operation = K8s.Client.create(resource)
+    {:ok, _} = K8s.Client.run(conn, operation)
+    {:ok, logs} = get_logs(conn, job_name)
 
-    case K8s.Client.run(conn, operation) do
-      {:ok, _} -> get_logs(conn, job_name)
-      error -> error
+    case JSON.decode(logs) do
+      {:ok, %{"status" => "success"}} -> {:ok, :pass, "succeeded!"}
+      {:ok, %{"status" => _}} -> {:ok, :fail, "failed"}
+      _ -> {:error, nil, logs}
     end
   end
 

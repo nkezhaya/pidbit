@@ -82,14 +82,14 @@ defmodule PidbitWeb.ProblemLive.Show do
          socket
          |> assign(:output, nil)
          |> assign_async(:output, fn ->
-           {:ok, output} = Runner.run_submission(submission)
-
            output =
-             case String.trim(output) do
-               "" ->
+             submission
+             |> Runner.run_submission()
+             |> case do
+               {_, _, ""} ->
                  nil
 
-               output ->
+               {_, _, output} ->
                  """
                  ```
                  #{output}
