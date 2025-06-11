@@ -1,13 +1,12 @@
 defmodule Pidbit.Runner do
   alias Pidbit.Problems.Submission
 
-  def run_submission(%Submission{user_id: user_id, code: code}) do
-    job_id = Ecto.UUID.generate() |> :erlang.phash2()
-    job_name = "runner-job-#{job_id}"
+  def run_submission(%Submission{id: submission_id, code: code}) do
+    job_name = "runner-job-#{submission_id}"
     {:ok, conn} = K8s.Conn.from_file(abspath("kubeconfig.yaml"))
 
-    File.mkdir_p!(abspath("code/#{user_id}"))
-    File.write!(abspath("code/#{user_id}/#{job_id}.exs"), code)
+    File.mkdir_p!(abspath("code/#{submission_id}"))
+    File.write!(abspath("code/#{submission_id}/solution.ex"), code)
 
     resource = %{
       "apiVersion" => "batch/v1",
@@ -28,9 +27,9 @@ defmodule Pidbit.Runner do
               %{
                 "name" => "elixir-runner",
                 "image" => "elixir:1.18.4-otp-27-alpine",
-                "command" => ["sh", "-c", "elixir /code/#{job_id}.exs"],
+                "command" => ["sh", "-c", "elixir /code/solution.ex 2>/dev/null"],
                 "volumeMounts" => [
-                  %{"mountPath" => "/code", "name" => "code", "subPath" => user_id}
+                  %{"mountPath" => "/code", "name" => "code", "subPath" => submission_id}
                 ]
               }
             ],
@@ -50,9 +49,11 @@ defmodule Pidbit.Runner do
     }
 
     operation = K8s.Client.create(resource)
-    {:ok, _job} = K8s.Client.run(conn, operation)
 
-    get_logs(conn, job_name)
+    case K8s.Client.run(conn, operation) do
+      {:ok, _} -> get_logs(conn, job_name)
+      error -> error
+    end
   end
 
   def get_logs(conn, job_name) do
@@ -65,8 +66,7 @@ defmodule Pidbit.Runner do
             container: "elixir-runner"
           )
 
-        {:ok, logs} = K8s.Client.run(conn, operation)
-        logs
+        K8s.Client.run(conn, operation)
 
       error ->
         error

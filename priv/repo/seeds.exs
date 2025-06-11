@@ -7,7 +7,7 @@ defmodule Seeds do
 
     problem
     |> Problem.changeset(%{stub: stub})
-    |> Repo.insert!(on_conflict: :replace_all, conflict_target: [:number])
+    |> Repo.insert!(on_conflict: {:replace_all_except, [:id]}, conflict_target: [:number])
   end
 end
 
@@ -48,6 +48,18 @@ end
     * If a process for the given key already exists, returns its PID.
     * If no process exists for the key, starts a new short-lived GenServer (your implementation), stores it in the registry, and returns its PID.
     * Multiple concurrent calls to `get_or_start/2` with the same key must not start multiple processes.
+
+  **Example**:
+
+  ```elixir
+  {:ok, _} = ProcRegistry.start_link(MyModule)
+  {:ok, pid} = ProcRegistry.get_or_start(MyModule, "key1")
+  pid #=> #PID<0.693.0>
+  {:ok, pid} = ProcRegistry.get_or_start(MyModule, "key1")
+  pid #=> #PID<0.693.0>
+  {:ok, pid} = ProcRegistry.get_or_start(MyModule, "key2")
+  pid #=> #PID<0.712.0>
+  ```
 
   **Constraints**:
 

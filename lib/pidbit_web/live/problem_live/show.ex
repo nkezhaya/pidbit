@@ -38,7 +38,7 @@ defmodule PidbitWeb.ProblemLive.Show do
           type="button"
           phx-click="submit"
           disabled={@output && !@output.ok?}
-          class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
+          class={"rounded-md #{if @output && @output.loading, do: "bg-indigo-300", else: "bg-indigo-600 hover:bg-indigo-500 cursor-pointer"} px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"}
         >
           <%= if @output && @output.loading do %>
             Submitting...
@@ -59,7 +59,7 @@ defmodule PidbitWeb.ProblemLive.Show do
     markdown_html =
       assigns.md
       |> String.trim()
-      |> MDEx.to_html!()
+      |> MDEx.to_html!(syntax_highlight: [formatter: {:html_inline, theme: "xcode_light"}])
 
     assigns = assign(assigns, :markdown, markdown_html)
 
@@ -82,14 +82,22 @@ defmodule PidbitWeb.ProblemLive.Show do
          socket
          |> assign(:output, nil)
          |> assign_async(:output, fn ->
+           {:ok, output} = Runner.run_submission(submission)
+
            output =
-             """
-             ```
-             #{Runner.run_submission(submission)}
-             ```
-             """
-             |> String.trim()
-             |> MDEx.to_html!()
+             case String.trim(output) do
+               "" ->
+                 nil
+
+               output ->
+                 """
+                 ```
+                 #{output}
+                 ```
+                 """
+                 |> String.trim()
+                 |> MDEx.to_html!()
+             end
 
            {:ok, %{output: output}}
          end)}
