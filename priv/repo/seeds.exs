@@ -38,33 +38,43 @@ end
 
   Your task is to implement a module with the following public functions:
 
-  * `ProcRegistry.start_link(worker_module :: module()) :: GenServer.on_start()`
-  * `ProcRegistry.get_or_start(worker_module :: module(), key :: String.t()) :: {:ok, pid()}`
+  ```elixir
+  ProcRegistry.start_link(
+    worker_module :: module()
+  ) :: GenServer.on_start()
+
+  ProcRegistry.fetch_or_start(
+    worker_module :: module(),
+    key :: String.t(),
+    opts :: keyword()
+  ) :: {:ok, pid()}
+  ```
 
   **Behavior**:
 
   * `start_link/1` starts the registry process.
-  * `get_or_start/2`:
+  * `fetch_or_start/3`:
+    * Starts the worker module with the given `opts`
     * If a process for the given key already exists, returns its PID.
     * If no process exists for the key, starts a new short-lived GenServer (your implementation), stores it in the registry, and returns its PID.
-    * Multiple concurrent calls to `get_or_start/2` with the same key must not start multiple processes.
+    * Multiple concurrent calls to `fetch_or_start/3` with the same key must not start multiple processes.
 
   **Example**:
 
   ```elixir
   {:ok, _} = ProcRegistry.start_link(MyModule)
-  {:ok, pid} = ProcRegistry.get_or_start(MyModule, "key1")
+  {:ok, pid} = ProcRegistry.fetch_or_start(MyModule, "key1")
   pid #=> #PID<0.693.0>
-  {:ok, pid} = ProcRegistry.get_or_start(MyModule, "key1")
+  {:ok, pid} = ProcRegistry.fetch_or_start(MyModule, "key1")
   pid #=> #PID<0.693.0>
-  {:ok, pid} = ProcRegistry.get_or_start(MyModule, "key2")
+  {:ok, pid} = ProcRegistry.fetch_or_start(MyModule, "key2")
   pid #=> #PID<0.712.0>
   ```
 
   **Constraints**:
 
   * Only **one** `ProcRegistry` can be started for the given worker module
-  * There will be tens of thousands of calls to `get_or_start/2` per second
+  * There will be tens of thousands of calls to `fetch_or_start/3` per second
   * New processes are started at a rate of dozens per second
   * Each registered process lives for around 10 seconds
   * The registry is local only (no distribution)
@@ -77,8 +87,8 @@ end
     def start_link(worker_module) do
     end
 
-    @spec get_or_start(module(), String.t()) :: {:ok, pid()}
-    def get_or_start(worker_module, key) do
+    @spec fetch_or_start(module(), String.t(), keyword()) :: {:ok, pid()}
+    def fetch_or_start(worker_module, key, opts) do
     end
   end
   """
