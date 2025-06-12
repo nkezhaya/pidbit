@@ -63,7 +63,10 @@ config :tailwind,
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  metadata: [:request_id],
+  compile_time_purge_matching: [
+    [library: :k8s]
+  ]
 
 config :phoenix, :json_library, JSON
 
