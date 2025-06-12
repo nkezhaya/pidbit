@@ -20,8 +20,7 @@ defmodule PidbitWeb.Router do
   scope "/", PidbitWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-
+    live "/", HomeLive, :index
     live "/problems", ProblemLive.Index, :index
     live "/problems/:slug", ProblemLive.Show, :show
   end
