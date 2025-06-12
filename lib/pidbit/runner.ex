@@ -19,7 +19,7 @@ defmodule Pidbit.Runner do
     output=$(elixirc solution.ex 2>&1 >/dev/null);
     status=$?;
     if [ $status -eq 0 ]; then
-      elixir test.ex
+      elixir test.ex 2>/dev/null
     else
       echo "$output"
     fi
@@ -76,24 +76,18 @@ defmodule Pidbit.Runner do
     end
   end
 
-  def get_logs(conn, job_name) do
-    case wait_until_terminated(conn, job_name) do
-      {:ok, %{"metadata" => %{"name" => name}}} ->
-        operation =
-          K8s.Client.get("v1", "pods/log",
-            namespace: "default",
-            name: name,
-            container: "elixir-runner"
-          )
-
+  defp get_logs(conn, job_name) do
+    case get_terminated_pod_name(conn, job_name) do
+      {:ok, name} ->
+        operation = K8s.Client.get("v1", "pods/log", namespace: "default", name: name)
         K8s.Client.run(conn, operation)
 
-      error ->
+      {:error, _} = error ->
         error
     end
   end
 
-  defp wait_until_terminated(conn, job_name) do
+  defp get_terminated_pod_name(conn, job_name) do
     # Get pod
     find = fn pods ->
       with %{"items" => [%{"metadata" => %{"name" => _}}]} <- pods do
@@ -118,7 +112,12 @@ defmodule Pidbit.Runner do
       end
     end
 
-    K8s.Client.Runner.Wait.run(conn, operation, find: find, eval: true, timeout: 30)
+    conn
+    |> K8s.Client.Runner.Wait.run(operation, find: find, eval: true, timeout: 30)
+    |> case do
+      {:ok, %{"metadata" => %{"name" => name}}} -> {:ok, name}
+      {:error, _} = error -> error
+    end
   end
 
   defp abspath(file) do
