@@ -3,34 +3,36 @@ defmodule PidbitWeb.UserLoginLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
-      <.header class="text-center">
-        Log in to account
-        <:subtitle>
-          Don't have an account?
-          <.link navigate={~p"/users/register"} class="font-semibold text-brand hover:underline">
+    <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+      <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+        <img class="mx-auto h-10 w-auto" src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company">
+        <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Sign in to your account</h2>
+      </div>
+
+      <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <.simple_form for={@form} id="LoginForm" action={~p"/users/log_in"} class="space-y-6" phx-update="ignore">
+          <.input field={@form[:email]} type="email" label="Email" required />
+          <.input field={@form[:password]} type="password" label="Password" required />
+
+          <:actions>
+            <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
+            <.link href={~p"/users/reset_password"} class="text-sm font-semibold">
+              Forgot your password?
+            </.link>
+          </:actions>
+
+          <:actions>
+            <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
+          </:actions>
+        </.simple_form>
+
+        <p class="mt-10 text-center text-sm/6 text-gray-500">
+          Not a member?
+          <.link navigate={~p"/users/register"} class="font-semibold text-indigo-600 hover:text-indigo-500">
             Sign up
           </.link>
-          for an account now.
-        </:subtitle>
-      </.header>
-
-      <.simple_form for={@form} id="login_form" action={~p"/users/log_in"} phx-update="ignore">
-        <.input field={@form[:email]} type="email" label="Email" required />
-        <.input field={@form[:password]} type="password" label="Password" required />
-
-        <:actions>
-          <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
-          <.link href={~p"/users/reset_password"} class="text-sm font-semibold">
-            Forgot your password?
-          </.link>
-        </:actions>
-        <:actions>
-          <.button phx-disable-with="Logging in..." class="w-full">
-            Log in <span aria-hidden="true">→</span>
-          </.button>
-        </:actions>
-      </.simple_form>
+        </p>
+      </div>
     </div>
     """
   end
