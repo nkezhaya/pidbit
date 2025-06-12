@@ -8,11 +8,12 @@ defmodule Pidbit.Problems do
 
   def list_problems do
     Problem
-    |> order_by(:id)
+    |> order_by(:number)
     |> Repo.all()
   end
 
   def get_problem!(id), do: Repo.get!(Problem, id)
+  def get_problem_by_slug!(slug), do: Repo.get_by!(Problem, slug: slug)
 
   def create_problem(attrs \\ %{}) do
     %Problem{}
