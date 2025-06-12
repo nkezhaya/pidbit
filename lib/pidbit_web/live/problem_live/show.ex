@@ -3,8 +3,8 @@ defmodule PidbitWeb.ProblemLive.Show do
 
   alias Pidbit.{Problems, Runner}
 
-  def mount(%{"id" => id}, _session, socket) do
-    problem = Problems.get_problem!(id)
+  def mount(%{"slug" => slug}, _session, socket) do
+    problem = Problems.get_problem_by_slug!(slug)
 
     {:ok,
      socket

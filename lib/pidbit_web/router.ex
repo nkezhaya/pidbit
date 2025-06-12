@@ -23,7 +23,7 @@ defmodule PidbitWeb.Router do
     get "/", PageController, :home
 
     live "/problems", ProblemLive.Index, :index
-    live "/problems/:id", ProblemLive.Show, :show
+    live "/problems/:slug", ProblemLive.Show, :show
   end
 
   # Other scopes may use custom stacks.

@@ -1,4 +1,5 @@
 defmodule Pidbit.Problems.Problem do
+  @derive {Phoenix.Param, key: :slug}
   use Pidbit.Schema
 
   schema "problems" do

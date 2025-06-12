@@ -14,5 +14,6 @@ defmodule Pidbit.Repo.Migrations.CreateProblems do
     end
 
     create unique_index(:problems, [:number])
+    create unique_index(:problems, [:slug])
   end
 end
