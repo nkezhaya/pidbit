@@ -22,6 +22,7 @@ defmodule Pidbit.Runner do
       elixir test.ex 2>/dev/null
     else
       echo "$output"
+      exit $status
     fi
     """
 
@@ -67,27 +68,37 @@ defmodule Pidbit.Runner do
 
     operation = K8s.Client.create(resource)
     {:ok, _} = K8s.Client.run(conn, operation)
-    {:ok, logs} = get_logs(conn, job_name)
+    {:ok, exit_code, logs} = get_logs(conn, job_name)
+
+    status =
+      case exit_code do
+        0 -> :ok
+        1 -> :compile_error
+        2 -> :test_failure
+      end
 
     case JSON.decode(logs) do
-      {:ok, %{"status" => "success"}} -> {:ok, :pass, "succeeded!"}
-      {:ok, %{"status" => _}} -> {:ok, :fail, "failed"}
+      {:ok, logs} -> {:ok, status, logs}
       _ -> {:error, nil, logs}
     end
   end
 
   defp get_logs(conn, job_name) do
-    case get_terminated_pod_name(conn, job_name) do
-      {:ok, name} ->
+    case get_terminated_pod(conn, job_name) do
+      {:ok, exit_code, name} ->
         operation = K8s.Client.get("v1", "pods/log", namespace: "default", name: name)
-        K8s.Client.run(conn, operation)
+
+        case K8s.Client.run(conn, operation) do
+          {:ok, logs} -> {:ok, exit_code, logs}
+          {:error, _} = error -> error
+        end
 
       {:error, _} = error ->
         error
     end
   end
 
-  defp get_terminated_pod_name(conn, job_name) do
+  defp get_terminated_pod(conn, job_name) do
     # Get pod
     find = fn pods ->
       with %{"items" => [%{"metadata" => %{"name" => _}}]} <- pods do
@@ -115,8 +126,17 @@ defmodule Pidbit.Runner do
     conn
     |> K8s.Client.Runner.Wait.run(operation, find: find, eval: true, timeout: 30)
     |> case do
-      {:ok, %{"metadata" => %{"name" => name}}} -> {:ok, name}
-      {:error, _} = error -> error
+      {:ok, %{"metadata" => %{"name" => name}} = pod} ->
+      exit_code =
+        pod
+        |> get_in(~w(status containerStatuses))
+        |> hd()
+        |> get_in(~w(state terminated exitCode))
+
+        {:ok, exit_code, name}
+
+      {:error, _} = error ->
+        error
     end
   end
 
