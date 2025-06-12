@@ -39,11 +39,11 @@ end
   Your task is to implement a module with the following public functions:
 
   ```elixir
-  ProcRegistry.start_link(
+  start_link(
     worker_module :: module()
   ) :: GenServer.on_start()
 
-  ProcRegistry.fetch_or_start(
+  fetch_or_start(
     worker_module :: module(),
     key :: String.t(),
     opts :: keyword()
