@@ -127,11 +127,11 @@ defmodule Pidbit.Runner do
     |> K8s.Client.Runner.Wait.run(operation, find: find, eval: true, timeout: 30)
     |> case do
       {:ok, %{"metadata" => %{"name" => name}} = pod} ->
-      exit_code =
-        pod
-        |> get_in(~w(status containerStatuses))
-        |> hd()
-        |> get_in(~w(state terminated exitCode))
+        exit_code =
+          pod
+          |> get_in(~w(status containerStatuses))
+          |> hd()
+          |> get_in(~w(state terminated exitCode))
 
         {:ok, exit_code, name}
 

@@ -3,6 +3,8 @@ defmodule PidbitWeb.ProblemLive.Show do
 
   alias Pidbit.{Problems, Runner}
 
+  on_mount {PidbitWeb.UserAuth, :mount_current_user}
+
   def mount(%{"slug" => slug}, _session, socket) do
     problem = Problems.get_problem_by_slug!(slug)
 
@@ -20,7 +22,7 @@ defmodule PidbitWeb.ProblemLive.Show do
         <.markdown md={@problem.description} />
       </div>
 
-      <div>
+      <div class="space-y-4">
         <LiveMonacoEditor.code_editor
           class="my-2"
           style="min-height: 250px; width: 100%;"
@@ -34,18 +36,17 @@ defmodule PidbitWeb.ProblemLive.Show do
           }
         />
 
-        <button
-          type="button"
-          phx-click="submit"
-          disabled={@output && !@output.ok?}
-          class={"rounded-md #{if @output && @output.loading, do: "bg-indigo-300", else: "bg-indigo-600 hover:bg-indigo-500 cursor-pointer"} px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"}
-        >
-          <%= if @output && @output.loading do %>
-            Submitting...
-          <% else %>
-            Submit
-          <% end %>
-        </button>
+        <.submit signed_in={not is_nil(@current_user)} output={@output} />
+
+        <div :if={is_nil(@current_user)} class="text-sm/6 text-gray-500">
+          <.link
+            navigate={~p"/users/log_in"}
+            class="font-semibold text-indigo-600 hover:text-indigo-500"
+          >
+            Log in
+          </.link>
+          to submit a solution.
+        </div>
 
         <div :if={output = @output && @output.ok? && @output.result} class="mt-2 overflow-scroll">
           {raw(output)}
@@ -55,7 +56,26 @@ defmodule PidbitWeb.ProblemLive.Show do
     """
   end
 
-  def markdown(assigns) do
+  defp submit(%{signed_in: signed_in, output: output} = assigns) do
+    assigns = assign(assigns, :disabled, !!(not signed_in || (output && output.loading)))
+
+    ~H"""
+    <button
+      type="button"
+      phx-click="submit"
+      disabled={@disabled}
+      class={"rounded-md #{if @disabled, do: "bg-indigo-300", else: "bg-indigo-600 hover:bg-indigo-500 cursor-pointer"} px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"}
+    >
+      <%= if @output && @output.loading do %>
+        Submitting...
+      <% else %>
+        Submit
+      <% end %>
+    </button>
+    """
+  end
+
+  defp markdown(assigns) do
     markdown_html =
       assigns.md
       |> String.trim()
@@ -73,10 +93,9 @@ defmodule PidbitWeb.ProblemLive.Show do
   end
 
   def handle_event("submit", _, socket) do
-    user = Pidbit.Repo.one(Pidbit.Accounts.User)
-    %{code: code, problem: problem} = socket.assigns
+    %{code: code, problem: problem, current_user: current_user} = socket.assigns
 
-    case Problems.create_submission(problem, user, code) do
+    case Problems.create_submission(problem, current_user, code) do
       {:ok, submission} ->
         {:noreply,
          socket
@@ -105,9 +124,5 @@ defmodule PidbitWeb.ProblemLive.Show do
       _ ->
         {:noreply, socket}
     end
-  end
-
-  def handle_info({:result, output}, socket) do
-    {:noreply, assign(socket, output: output, loading: false)}
   end
 end
