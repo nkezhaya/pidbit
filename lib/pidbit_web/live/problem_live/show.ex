@@ -5,16 +5,6 @@ defmodule PidbitWeb.ProblemLive.Show do
 
   on_mount {PidbitWeb.UserAuth, :mount_current_user}
 
-  def mount(%{"slug" => slug}, _session, socket) do
-    problem = Problems.get_problem_by_slug!(slug)
-
-    {:ok,
-     socket
-     |> assign(page_title: problem.name, page_header: "#{problem.number}. #{problem.name}")
-     |> assign(problem: problem, loading: false)
-     |> assign(code: problem.stub, output: nil)}
-  end
-
   def render(assigns) do
     ~H"""
     <div class="grid h-screen grid-cols-2 gap-4">
@@ -86,6 +76,16 @@ defmodule PidbitWeb.ProblemLive.Show do
     ~H"""
     {raw(@markdown)}
     """
+  end
+
+  def mount(%{"slug" => slug}, _session, socket) do
+    problem = Problems.get_problem_by_slug!(slug)
+
+    {:ok,
+     socket
+     |> assign(page_title: problem.name, page_header: "#{problem.number}. #{problem.name}")
+     |> assign(problem: problem, loading: false)
+     |> assign(code: problem.stub, output: nil)}
   end
 
   def handle_event("editor_update", %{"value" => code}, socket) do

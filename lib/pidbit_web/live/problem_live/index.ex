@@ -1,15 +1,6 @@
 defmodule PidbitWeb.ProblemLive.Index do
   use PidbitWeb, :live_view
 
-  def mount(_params, _session, socket) do
-    problems = Pidbit.Problems.list_problems()
-
-    {:ok,
-     socket
-     |> assign(page_title: "Problems", page_header: "Problems")
-     |> assign(problems: problems)}
-  end
-
   def render(assigns) do
     ~H"""
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -44,5 +35,14 @@ defmodule PidbitWeb.ProblemLive.Index do
       </div>
     </div>
     """
+  end
+
+  def mount(_params, _session, socket) do
+    problems = Pidbit.Problems.list_problems()
+
+    {:ok,
+     socket
+     |> assign(page_title: "Problems", page_header: "Problems")
+     |> assign(problems: problems)}
   end
 end
