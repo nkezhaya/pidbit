@@ -38,7 +38,7 @@ defmodule PidbitWeb.ProblemLive.Index do
   end
 
   def mount(_params, _session, socket) do
-    problems = Pidbit.Problems.list_problems()
+    problems = Pidbit.Cache.list_problems()
 
     {:ok,
      socket

@@ -1,7 +1,8 @@
 defmodule PidbitWeb.ProblemLive.Show do
   use PidbitWeb, :live_view
+  require Pidbit.Cache
 
-  alias Pidbit.{Problems, Runner}
+  alias Pidbit.{Cache, Problems, Runner}
 
   on_mount {PidbitWeb.UserAuth, :mount_current_user}
 
@@ -79,7 +80,10 @@ defmodule PidbitWeb.ProblemLive.Show do
   end
 
   def mount(%{"slug" => slug}, _session, socket) do
-    problem = Problems.get_problem_by_slug!(slug)
+    problem =
+      Cache.fetch {:get_problem_by_slug!, slug} do
+        Problems.get_problem_by_slug!(slug)
+      end
 
     {:ok,
      socket

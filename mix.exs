@@ -57,6 +57,7 @@ defmodule Pidbit.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.26"},
       {:bandit, "~> 1.5"},
+      {:cachex, "~> 4.1"},
       {:k8s, "~> 2.6"},
       {:mdex, "~> 0.7"},
       {:live_monaco_editor, "~> 0.2"},

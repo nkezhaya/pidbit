@@ -10,6 +10,11 @@ defmodule Pidbit.Application do
     children = [
       PidbitWeb.Telemetry,
       Pidbit.Repo,
+
+      # Cache
+      {Cachex, [:pidbit_cache]},
+      Pidbit.ChangeListener,
+
       {Phoenix.PubSub, name: Pidbit.PubSub},
       {Finch, name: Pidbit.Finch},
       PidbitWeb.Endpoint
