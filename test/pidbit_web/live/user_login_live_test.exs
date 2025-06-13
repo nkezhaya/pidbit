@@ -4,11 +4,11 @@ defmodule PidbitWeb.UserLoginLiveTest do
   import Phoenix.LiveViewTest
   import Pidbit.AccountsFixtures
 
-  describe "Log in page" do
+  describe "log in page" do
     test "renders log in page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log_in")
 
-      assert html =~ "Log in"
+      assert html =~ "Sign in"
       assert html =~ "Register"
       assert html =~ "Forgot your password?"
     end
@@ -32,7 +32,7 @@ defmodule PidbitWeb.UserLoginLiveTest do
       {:ok, lv, _html} = live(conn, ~p"/users/log_in")
 
       form =
-        form(lv, "#login_form", user: %{email: user.email, password: password, remember_me: true})
+        form(lv, "#LoginForm", user: %{email: user.email, password: password, remember_me: true})
 
       conn = submit_form(form, conn)
 
@@ -45,7 +45,7 @@ defmodule PidbitWeb.UserLoginLiveTest do
       {:ok, lv, _html} = live(conn, ~p"/users/log_in")
 
       form =
-        form(lv, "#login_form",
+        form(lv, "#LoginForm",
           user: %{email: "test@email.com", password: "123456", remember_me: true}
         )
 

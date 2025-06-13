@@ -11,10 +11,12 @@ defmodule Pidbit.ProblemsFixtures do
     {:ok, problem} =
       attrs
       |> Enum.into(%{
+        number: 1,
         description: "some description",
-        difficulty: "some difficulty",
+        difficulty: :easy,
         name: "some name",
-        slug: "some slug"
+        slug: "some slug",
+        stub: "defmodule Foo do; end"
       })
       |> Pidbit.Problems.create_problem()
 

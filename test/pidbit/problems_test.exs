@@ -22,17 +22,19 @@ defmodule Pidbit.ProblemsTest do
 
     test "create_problem/1 with valid data creates a problem" do
       valid_attrs = %{
+        number: 1,
         name: "some name",
         description: "some description",
         slug: "some slug",
-        difficulty: "some difficulty"
+        difficulty: :easy,
+        stub: "defmodule Foo do; end"
       }
 
       assert {:ok, %Problem{} = problem} = Problems.create_problem(valid_attrs)
       assert problem.name == "some name"
       assert problem.description == "some description"
       assert problem.slug == "some slug"
-      assert problem.difficulty == "some difficulty"
+      assert problem.difficulty == :easy
     end
 
     test "create_problem/1 with invalid data returns error changeset" do
@@ -46,14 +48,14 @@ defmodule Pidbit.ProblemsTest do
         name: "some updated name",
         description: "some updated description",
         slug: "some updated slug",
-        difficulty: "some updated difficulty"
+        difficulty: :medium
       }
 
       assert {:ok, %Problem{} = problem} = Problems.update_problem(problem, update_attrs)
       assert problem.name == "some updated name"
       assert problem.description == "some updated description"
       assert problem.slug == "some updated slug"
-      assert problem.difficulty == "some updated difficulty"
+      assert problem.difficulty == :medium
     end
 
     test "update_problem/2 with invalid data returns error changeset" do
