@@ -2,6 +2,7 @@ defmodule Pidbit.Runner do
   alias Pidbit.Problems
   alias Pidbit.Problems.Submission
 
+  @spec run_submission(Submission.t()) :: Submission.t()
   def run_submission(%Submission{id: submission_id, code: code, problem: problem} = submission) do
     job_name = "runner-job-#{submission_id}"
     {:ok, conn} = K8s.Conn.from_file(abspath("kubeconfig.yaml"))
@@ -71,22 +72,10 @@ defmodule Pidbit.Runner do
     {:ok, _} = K8s.Client.run(conn, operation)
     {:ok, exit_code, logs} = get_logs(conn, job_name)
 
-    status =
-      case exit_code do
-        0 -> :ok
-        1 -> :compile_error
-        2 -> :test_failure
-      end
+    status = Submission.status_from_exit_code(exit_code)
+    submission = Problems.put_submission_status!(submission, status)
 
-    case status do
-      :ok -> :passed
-      _ -> :failed
-    end
-    |> then(fn submission_status ->
-      Problems.put_submission_status!(submission, submission_status)
-    end)
-
-    {status, logs}
+    %{submission | output: logs}
   end
 
   defp get_logs(conn, job_name) do

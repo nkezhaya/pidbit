@@ -114,10 +114,10 @@ defmodule PidbitWeb.ProblemLive.Show do
          socket
          |> assign(:output, nil)
          |> assign_async(:output, fn ->
-           {status, output} = Runner.run_submission(submission)
+           submission = Runner.run_submission(submission)
 
-           md =
-             case output do
+           output =
+             case submission.output do
                "" ->
                  nil
 
@@ -131,7 +131,7 @@ defmodule PidbitWeb.ProblemLive.Show do
                  |> MDEx.to_html!()
              end
 
-           {:ok, %{output: {status, md}}}
+           {:ok, %{output: {submission.status, output}}}
          end)}
 
       _ ->
