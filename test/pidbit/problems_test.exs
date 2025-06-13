@@ -1,13 +1,11 @@
 defmodule Pidbit.ProblemsTest do
   use Pidbit.DataCase
+  import Pidbit.ProblemsFixtures
 
   alias Pidbit.Problems
+  alias Pidbit.Problems.Problem
 
   describe "problems" do
-    alias Pidbit.Problems.Problem
-
-    import Pidbit.ProblemsFixtures
-
     @invalid_attrs %{name: nil, description: nil, slug: nil, difficulty: nil}
 
     test "list_problems/0 returns all problems" do
@@ -18,6 +16,11 @@ defmodule Pidbit.ProblemsTest do
     test "get_problem!/1 returns the problem with given id" do
       problem = problem_fixture()
       assert Problems.get_problem!(problem.id) == problem
+    end
+
+    test "get_problem_by_slug!/1 returns the problem with given slug" do
+      problem = problem_fixture()
+      assert Problems.get_problem_by_slug!(problem.slug) == problem
     end
 
     test "create_problem/1 with valid data creates a problem" do
@@ -73,6 +76,26 @@ defmodule Pidbit.ProblemsTest do
     test "change_problem/1 returns a problem changeset" do
       problem = problem_fixture()
       assert %Ecto.Changeset{} = Problems.change_problem(problem)
+    end
+  end
+
+  describe "submissions" do
+    import Pidbit.AccountsFixtures
+    alias Pidbit.Problems.Submission
+
+    test "create_submission/1 with valid data creates a submission" do
+      problem = problem_fixture()
+      user = user_fixture()
+
+      assert {:ok, %Submission{} = submission} = Problems.create_submission(problem, user, "test")
+      assert submission.code == "test"
+    end
+
+    test "create_submission/1 with invalid data returns error changeset" do
+      problem = problem_fixture()
+      user = user_fixture()
+
+      assert {:error, %Ecto.Changeset{}} = Problems.create_submission(problem, user, "")
     end
   end
 end
