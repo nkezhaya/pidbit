@@ -1,7 +1,8 @@
 defmodule Pidbit.Runner do
+  alias Pidbit.Problems
   alias Pidbit.Problems.Submission
 
-  def run_submission(%Submission{id: submission_id, code: code, problem: problem}) do
+  def run_submission(%Submission{id: submission_id, code: code, problem: problem} = submission) do
     job_name = "runner-job-#{submission_id}"
     {:ok, conn} = K8s.Conn.from_file(abspath("kubeconfig.yaml"))
 
@@ -77,10 +78,15 @@ defmodule Pidbit.Runner do
         2 -> :test_failure
       end
 
-    case JSON.decode(logs) do
-      {:ok, logs} -> {:ok, status, logs}
-      _ -> {:error, nil, logs}
+    case status do
+      :ok -> :passed
+      _ -> :failed
     end
+    |> then(fn submission_status ->
+      Problems.put_submission_status!(submission, submission_status)
+    end)
+
+    {status, logs}
   end
 
   defp get_logs(conn, job_name) do

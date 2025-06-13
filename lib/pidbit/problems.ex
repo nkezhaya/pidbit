@@ -40,4 +40,11 @@ defmodule Pidbit.Problems do
     |> Submission.changeset(%{code: code})
     |> Repo.insert()
   end
+
+  @spec put_submission_status!(Submission.t(), Submission.status()) :: Submission.t()
+  def put_submission_status!(%Submission{} = submission, status) do
+    submission
+    |> Submission.changeset(%{status: status})
+    |> Repo.update!()
+  end
 end

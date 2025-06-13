@@ -14,7 +14,6 @@ defmodule Pidbit.Application do
       # Cache
       {Cachex, [:pidbit_cache]},
       Pidbit.ChangeListener,
-
       {Phoenix.PubSub, name: Pidbit.PubSub},
       {Finch, name: Pidbit.Finch},
       PidbitWeb.Endpoint

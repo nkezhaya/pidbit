@@ -40,7 +40,16 @@ defmodule PidbitWeb.ProblemLive.Show do
         </div>
 
         <div :if={output = @output && @output.ok? && @output.result} class="mt-2 overflow-scroll">
-          {raw(output)}
+          <%= case elem(output, 0) do %>
+            <% :ok -> %>
+              <div class="text-green-400">Success!</div>
+            <% :compile_error -> %>
+              <div class="text-red-400">Compile Error</div>
+            <% :test_failure -> %>
+              <div class="text-red-400">Test Failure</div>
+          <% end %>
+
+          {raw(elem(output, 1))}
         </div>
       </div>
     </div>
@@ -105,14 +114,14 @@ defmodule PidbitWeb.ProblemLive.Show do
          socket
          |> assign(:output, nil)
          |> assign_async(:output, fn ->
-           output =
-             submission
-             |> Runner.run_submission()
-             |> case do
-               {_, _, ""} ->
+           {status, output} = Runner.run_submission(submission)
+
+           md =
+             case output do
+               "" ->
                  nil
 
-               {_, _, output} ->
+               output ->
                  """
                  ```
                  #{output}
@@ -122,7 +131,7 @@ defmodule PidbitWeb.ProblemLive.Show do
                  |> MDEx.to_html!()
              end
 
-           {:ok, %{output: output}}
+           {:ok, %{output: {status, md}}}
          end)}
 
       _ ->
