@@ -61,7 +61,11 @@ defmodule Pidbit.Problems do
     |> Repo.insert!(on_conflict: :replace_all, conflict_target: [:problem_id, :user_id])
   end
 
-  @spec get_editor_value!(Problem.t(), User.t()) :: String.t()
+  @spec get_editor_value!(Problem.t(), nil | User.t()) :: String.t()
+  def get_editor_value!(%Problem{} = problem, nil) do
+    problem.stub
+  end
+
   def get_editor_value!(%Problem{} = problem, %User{} = user) do
     EditorSave
     |> where([es], es.problem_id == ^problem.id and es.user_id == ^user.id)
