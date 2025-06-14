@@ -2,6 +2,8 @@ defmodule Pidbit.Problems.Problem do
   @derive {Phoenix.Param, key: :slug}
   use Pidbit.Schema
 
+  @type t() :: %__MODULE__{}
+
   schema "problems" do
     field :name, :string
     field :number, :integer

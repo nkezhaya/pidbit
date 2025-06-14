@@ -17,7 +17,22 @@ end
   slug: "hello-world",
   difficulty: :easy,
   description: """
-  Write a function that returns `"Hello, world!"`
+  Your task is to implement a module with the following public function:
+
+  ```elixir
+  world() :: String.t()
+  ```
+
+  **Behavior**:
+
+  * `world/0` returns `"Hello, world!"`
+
+  **Example**:
+
+  ```elixir
+  iex> Hello.world()
+  "Hello, world!"
+  ```
   """,
   stub: """
   defmodule Hello do
@@ -62,13 +77,13 @@ end
   **Example**:
 
   ```elixir
-  {:ok, _} = ProcRegistry.start_link(MyModule)
-  {:ok, pid} = ProcRegistry.fetch_or_start(MyModule, "key1")
-  pid #=> #PID<0.693.0>
-  {:ok, pid} = ProcRegistry.fetch_or_start(MyModule, "key1")
-  pid #=> #PID<0.693.0>
-  {:ok, pid} = ProcRegistry.fetch_or_start(MyModule, "key2")
-  pid #=> #PID<0.712.0>
+  iex> {:ok, _} = ProcRegistry.start_link(MyModule)
+  iex> ProcRegistry.fetch_or_start(MyModule, "key1")
+  {:ok, #PID<0.693.0>}
+  iex> ProcRegistry.fetch_or_start(MyModule, "key1")
+  {:ok, #PID<0.693.0>}
+  iex> ProcRegistry.fetch_or_start(MyModule, "key2")
+  {:ok, #PID<0.712.0>}
   ```
 
   **Constraints**:
@@ -105,9 +120,11 @@ end
 
   Your task is to implement a module EventBuffer with the following public functions:
 
-  * `EventBuffer.start_link()`
-  * `EventBuffer.write(event :: String.t()) :: :ok`
-  * `EventBuffer.flush() :: [{pos_integer(), String.t()}]`
+  ```elixir
+  start_link() :: GenServer.on_start()
+  write(event :: String.t()) :: :ok
+  flush() :: [{pos_integer(), String.t()}]
+  ```
 
   **Behavior**:
 
@@ -118,12 +135,23 @@ end
   * `flush/0` returns all events in the order they were written, and empties the buffer
   * The function returns a list of tuples, where the first element is the unique ID of the event, and the second element is the event string passed to `write/1`
 
+  **Example**:
+
+  ```elixir
+  iex> {:ok, _} = EventBuffer.start_link()
+  iex> EventBuffer.write("some event")
+  iex> EventBuffer.write("another event")
+  iex> EventBuffer.flush()
+  [{1, "some event"}, {2, "another event"}]
+  ```
+
   **Constraints**:
 
   * `write/1` must support tens of thousands of concurrent calls per second
   * Only one instance of `flush/0` will be called at a time
   * `flush/0` must be synchronous
   * Each event must be flushed exactly once
+  * The event IDs **must** be strictly sequential, starting at 1
   """,
   stub: """
   defmodule EventBuffer do

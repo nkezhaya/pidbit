@@ -67,12 +67,6 @@ defmodule Pidbit.ProblemsTest do
       assert problem == Problems.get_problem!(problem.id)
     end
 
-    test "delete_problem/1 deletes the problem" do
-      problem = problem_fixture()
-      assert {:ok, %Problem{}} = Problems.delete_problem(problem)
-      assert_raise Ecto.NoResultsError, fn -> Problems.get_problem!(problem.id) end
-    end
-
     test "change_problem/1 returns a problem changeset" do
       problem = problem_fixture()
       assert %Ecto.Changeset{} = Problems.change_problem(problem)

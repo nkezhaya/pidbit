@@ -1,6 +1,8 @@
 defmodule Pidbit.Accounts.User do
   use Pidbit.Schema
 
+  @type t() :: %__MODULE__{}
+
   schema "users" do
     field :email, :string
     field :password, :string, virtual: true, redact: true
