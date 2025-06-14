@@ -49,17 +49,12 @@ defmodule PidbitWeb.ProblemLive.Show do
           to submit a solution.
         </div>
 
-        <div :if={output = @output && @output.ok? && @output.result} class="mt-2 overflow-scroll">
-          <%= case elem(output, 0) do %>
-            <% :ok -> %>
-              <div class="text-green-400">Success!</div>
-            <% :compile_error -> %>
-              <div class="text-red-400">Compile Error</div>
-            <% :test_failure -> %>
-              <div class="text-red-400">Test Failure</div>
-          <% end %>
+        <div :if={output = @output && @output.ok? && @output.result} class="mt-2">
+          <.submission_result_alert status={elem(output, 0)} />
 
-          {raw(elem(output, 1))}
+          <div class="overflow-scroll">
+            {raw(elem(output, 1))}
+          </div>
         </div>
       </div>
     </div>

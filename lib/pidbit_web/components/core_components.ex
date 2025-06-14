@@ -410,6 +410,63 @@ defmodule PidbitWeb.CoreComponents do
   end
 
   @doc """
+  Renders the alert showing the submission result.
+  """
+  attr :status, :atom, required: true
+
+  def submission_result_alert(%{status: status} = assigns) do
+    assigns =
+      assigns
+      |> assign_new(:bg_class, fn ->
+        case status do
+          :ok -> "bg-green-50"
+          _ -> "bg-red-50"
+        end
+      end)
+      |> assign_new(:text_class, fn ->
+        case status do
+          :ok -> "text-green-800"
+          _ -> "text-red-800"
+        end
+      end)
+
+    ~H"""
+    <div class={"rounded-md #{@bg_class} p-4"}>
+      <div class="flex">
+        <div class="shrink-0">
+          <%= case @status do %>
+            <% :ok -> %>
+              <Heroicons.icon
+                name="check-circle"
+                type="solid"
+                class="size-5 text-green-400 stroke-none fill-current"
+              />
+            <% _ -> %>
+              <Heroicons.icon
+                name="x-circle"
+                type="solid"
+                class="size-5 text-red-400 stroke-none fill-current"
+              />
+          <% end %>
+        </div>
+        <div class="ml-3">
+          <p class={"text-sm font-medium #{@text_class}"}>
+            <%= case @status do %>
+              <% :ok -> %>
+                Success!
+              <% :compile_error -> %>
+                Compile Error
+              <% :test_failure -> %>
+                Test Failure
+            <% end %>
+          </p>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
   Generates a generic error message.
   """
   slot :inner_block, required: true
