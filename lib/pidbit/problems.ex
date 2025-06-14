@@ -1,10 +1,10 @@
 defmodule Pidbit.Problems do
-  import Ecto.Query, warn: false
+  import Ecto.Query
 
   alias Pidbit.Accounts.User
   alias Pidbit.Repo
 
-  alias __MODULE__.{Problem, Submission}
+  alias __MODULE__.{Problem, Submission, EditorSave}
 
   @typep result(t) :: {:ok, t} | {:error, Ecto.Changeset.t()}
 
@@ -52,5 +52,23 @@ defmodule Pidbit.Problems do
     submission
     |> Submission.changeset(%{status: status})
     |> Repo.update!()
+  end
+
+  @spec persist_editor_value!(Problem.t(), User.t(), String.t()) :: :ok
+  def persist_editor_value!(%Problem{} = problem, %User{} = user, value) do
+    %EditorSave{problem_id: problem.id, user_id: user.id}
+    |> EditorSave.changeset(%{value: value})
+    |> Repo.insert!(on_conflict: :replace_all, conflict_target: [:problem_id, :user_id])
+  end
+
+  @spec get_editor_value!(Problem.t(), User.t()) :: String.t()
+  def get_editor_value!(%Problem{} = problem, %User{} = user) do
+    EditorSave
+    |> where([es], es.problem_id == ^problem.id and es.user_id == ^user.id)
+    |> Repo.one()
+    |> case do
+      nil -> problem.stub
+      save -> save.value
+    end
   end
 end
