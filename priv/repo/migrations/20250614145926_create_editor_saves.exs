@@ -7,7 +7,7 @@ defmodule Pidbit.Repo.Migrations.CreateEditorSaves do
       add :user_id, references(:users), null: false, primary_key: true
       add :value, :text
 
-      timestamps(updated_at: false)
+      timestamps(type: :utc_timestamp_usec, updated_at: false)
     end
   end
 end

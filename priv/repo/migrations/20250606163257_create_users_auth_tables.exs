@@ -6,11 +6,13 @@ defmodule Pidbit.Repo.Migrations.CreateUsersAuthTables do
 
     create table(:users, primary_key: false) do
       add :id, :binary_id, primary_key: true
+      add :first_name, :string
+      add :last_name, :string
       add :email, :citext, null: false
       add :hashed_password, :string, null: false
       add :confirmed_at, :utc_datetime
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :utc_datetime_usec)
     end
 
     create unique_index(:users, [:email])
@@ -22,7 +24,7 @@ defmodule Pidbit.Repo.Migrations.CreateUsersAuthTables do
       add :context, :string, null: false
       add :sent_to, :string
 
-      timestamps(type: :utc_datetime, updated_at: false)
+      timestamps(type: :utc_datetime_usec, updated_at: false)
     end
 
     create index(:users_tokens, [:user_id])

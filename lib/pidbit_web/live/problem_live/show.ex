@@ -9,11 +9,11 @@ defmodule PidbitWeb.ProblemLive.Show do
   def render(assigns) do
     ~H"""
     <div class="grid h-screen grid-cols-2 gap-4">
-      <div id="ProblemDescription" class="space-y-3">
+      <div id="ProblemDescription" class="col-span-2 lg:col-span-1 space-y-3">
         <.markdown md={@problem.description} />
       </div>
 
-      <div class="space-y-4">
+      <div class="col-span-2 lg:col-span-1 space-y-4">
         <div class="flex justify-end">
           <button
             type="button"
@@ -26,7 +26,7 @@ defmodule PidbitWeb.ProblemLive.Show do
 
         <LiveMonacoEditor.code_editor
           class="my-2"
-          style="min-height: 250px; width: 100%;"
+          style="min-height: 250px; max-height: 800px; width: 100%;"
           value={@code}
           change="editor_update"
           opts={
